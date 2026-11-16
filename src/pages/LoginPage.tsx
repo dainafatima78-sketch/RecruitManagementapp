@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Sparkles, Mail, KeyRound } from 'lucide-react';
+import { Sparkles, Mail } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { Input } from '../components/common/Input';
@@ -49,12 +49,6 @@ export const LoginPage: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleQuickDemoFill = () => {
-    setEmail('recruiter@recruitai.com');
-    setPassword('Password123!');
-    setError(null);
   };
 
   const handleForgotPasswordSubmit = async (e: React.FormEvent) => {
@@ -156,18 +150,6 @@ export const LoginPage: React.FC = () => {
               Sign In
             </Button>
           </form>
-
-          {/* Quick Demo Fill Helper */}
-          <div className="mt-5 pt-5 border-t border-[#E3E8F0]">
-            <button
-              type="button"
-              onClick={handleQuickDemoFill}
-              className="w-full py-2 px-3 text-xs font-medium text-[#3978F6] bg-[#EAF1FF] hover:bg-[#d8e5ff] rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
-            >
-              <KeyRound className="w-3.5 h-3.5" />
-              <span>Use Demo Account (recruiter@recruitai.com)</span>
-            </button>
-          </div>
 
           {/* Switch to SignUp */}
           <div className="mt-6 text-center text-xs text-[#697386]">
