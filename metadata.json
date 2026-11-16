@@ -1,0 +1,6 @@
+{
+  "name": "RecruitAI - Recruitment Management Workspace",
+  "description": "Professional recruitment management platform featuring job pipeline tracking, candidate profiles, resume processing, AI candidate matching, and intelligent interview question generation.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
