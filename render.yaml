@@ -28,3 +28,4 @@ databases:
     plan: free
     databaseName: recruitai
     user: recruitai_user
+

@@ -157,3 +157,4 @@ export async function initializePostgresDatabase(): Promise<boolean> {
     return false;
   }
 }
+
