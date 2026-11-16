@@ -73,7 +73,7 @@ async function fetchJson<T>(url: string, options: RequestInit = {}): Promise<T> 
   }
 
   if (!res.ok) {
-    const errorMessage = data?.error || data?.message || `Request failed with status ${res.status}`;
+    const errorMessage = String(data?.error || data?.message || `Request failed with status ${res.status}`);
     throw new Error(errorMessage);
   }
 
