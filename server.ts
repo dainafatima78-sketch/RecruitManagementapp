@@ -10,6 +10,7 @@ import matchingRoutes from './src/server/routes/matchingRoutes';
 import interviewRoutes from './src/server/routes/interviewRoutes';
 import dashboardRoutes from './src/server/routes/dashboardRoutes';
 import aiAssistantRoutes from './src/server/routes/aiAssistantRoutes';
+import teamRoutes from './src/server/routes/teamRoutes';
 import { initializePostgresDatabase } from './src/server/postgres';
 
 dotenv.config();
@@ -63,6 +64,7 @@ app.use('/api/interviews', interviewRoutes);
 app.use('/api/interview', interviewRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/ai', aiAssistantRoutes);
+app.use('/api/team', teamRoutes);
 
 // Health check endpoint
 app.get('/api/health', (_req, res) => {
