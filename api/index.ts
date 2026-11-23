@@ -1,4 +1,3 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node';
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
@@ -28,6 +27,15 @@ app.use('/api', (_req, res, next) => {
   next();
 });
 
+let dbInitPromise: Promise<boolean> | null = null;
+
+app.use((_req, _res, next) => {
+  if (!dbInitPromise) {
+    dbInitPromise = initializePostgresDatabase();
+  }
+  dbInitPromise.then(() => next(), next);
+});
+
 // Register routes
 app.use('/api/auth', authRoutes);
 app.use('/api/jobs', jobRoutes);
@@ -49,13 +57,5 @@ app.all(['/api', '/api/*'], (req, res) => {
   res.status(404).json({ error: `API route not found: ${req.method} ${req.originalUrl}` });
 });
 
-let dbInitPromise: Promise<boolean> | null = null;
-
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-  if (!dbInitPromise) {
-    dbInitPromise = initializePostgresDatabase();
-  }
-  await dbInitPromise;
-  return app(req as any, res as any);
-}
+export default app;
 
