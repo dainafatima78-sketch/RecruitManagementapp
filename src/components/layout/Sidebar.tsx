@@ -4,7 +4,6 @@ import {
   LayoutDashboard,
   Briefcase,
   Users,
-  Sparkles,
   MessageSquareText,
   HelpCircle,
   LogOut,
@@ -47,7 +46,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { label: 'Jobs', path: '/jobs', icon: Briefcase },
     { label: 'Candidates', path: '/candidates', icon: Users },
     { label: 'Interview Generator', path: '/interview-generator', icon: MessageSquareText },
-    { label: 'AI Matching', path: '/matching', icon: Sparkles },
     { label: 'How To Use', path: '/how-to-use', icon: HelpCircle }
   ];
 

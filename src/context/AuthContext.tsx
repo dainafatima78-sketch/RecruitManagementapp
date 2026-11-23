@@ -28,6 +28,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } catch {
         if (isMounted) {
           setUser(null);
+          localStorage.removeItem('recruitai_token');
+          sessionStorage.removeItem('recruitai_token');
         }
       } finally {
         if (isMounted) {
@@ -44,8 +46,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const login = async (data: { email: string; password: string; rememberMe?: boolean }) => {
-    const res = await api.login(data);
-    setUser(res.user);
+    try {
+      const res = await api.login(data);
+      setUser(res.user);
+    } catch (err: any) {
+      // Re-throw with proper error message handling
+      const errorMessage = typeof err === 'string' ? err : (err?.message || 'Login failed. Please check your credentials.');
+      throw new Error(errorMessage);
+    }
   };
 
   const register = async (data: { name: string; email: string; password: string; confirmPassword?: string; acceptTerms: boolean }) => {

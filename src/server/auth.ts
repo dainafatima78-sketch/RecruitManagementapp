@@ -15,23 +15,11 @@ export function requireAuth(req: AuthenticatedRequest, res: Response, next: Next
   }
 
   if (!token) {
-    const demoUser = storage.getDefaultUser();
-    if (demoUser) {
-      req.user = demoUser;
-      req.sessionToken = 'demo-session';
-      return next();
-    }
     return res.status(401).json({ error: 'Authentication required. Please sign in.' });
   }
 
   const session = storage.getSession(token);
   if (!session) {
-    const demoUser = storage.getDefaultUser();
-    if (demoUser) {
-      req.user = demoUser;
-      req.sessionToken = token;
-      return next();
-    }
     res.clearCookie('recruitai_session');
     return res.status(401).json({ error: 'Session expired or invalid. Please sign in again.' });
   }

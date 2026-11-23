@@ -18,9 +18,26 @@ function resolveUrl(path: string): string {
   return `${API_BASE_URL}${cleanPath}`;
 }
 
+function extractErrorMessage(error: any): string {
+  if (typeof error === 'string') return error;
+  if (error?.message && typeof error.message === 'string') return error.message;
+  if (error?.error && typeof error.error === 'string') return error.error;
+  if (error?.detail && typeof error.detail === 'string') return error.detail;
+  if (error?.errors && Array.isArray(error.errors) && error.errors.length > 0) {
+    const firstError = error.errors[0];
+    if (typeof firstError === 'string') return firstError;
+    if (typeof firstError === 'object' && firstError.message) return String(firstError.message);
+  }
+  if (error?.toString && typeof error.toString === 'function') {
+    const str = error.toString();
+    if (str !== '[object Object]') return str;
+  }
+  return 'An unexpected error occurred. Please try again.';
+}
+
 async function fetchJson<T>(url: string, options: RequestInit = {}): Promise<T> {
   const finalUrl = resolveUrl(url);
-  const token = localStorage.getItem('recruitai_token');
+  const token = localStorage.getItem('recruitai_token') || sessionStorage.getItem('recruitai_token');
   const headers: Record<string, string> = {
     'Accept': 'application/json',
     ...((options.headers as Record<string, string>) || {})
@@ -42,7 +59,7 @@ async function fetchJson<T>(url: string, options: RequestInit = {}): Promise<T> 
       credentials: 'include'
     });
   } catch (netErr: any) {
-    throw new Error(`Connection error reaching ${finalUrl}: ${netErr.message || 'Server unreachable'}`);
+    throw new Error(`Connection error reaching ${finalUrl}: ${extractErrorMessage(netErr) || 'Server unreachable'}`);
   }
 
   const contentType = res.headers.get('content-type') || '';
@@ -69,11 +86,11 @@ async function fetchJson<T>(url: string, options: RequestInit = {}): Promise<T> 
   try {
     data = await res.json();
   } catch (err: any) {
-    throw new Error(`Failed to parse JSON response from ${finalUrl}: ${err.message}`);
+    throw new Error(`Failed to parse JSON response from ${finalUrl}: ${extractErrorMessage(err)}`);
   }
 
   if (!res.ok) {
-    const errorMessage = String(data?.error || data?.message || `Request failed with status ${res.status}`);
+    const errorMessage = extractErrorMessage(data?.error || data?.message || data?.detail || data?.errors || `Request failed with status ${res.status}`);
     throw new Error(errorMessage);
   }
 
@@ -88,7 +105,8 @@ export const api = {
       body: JSON.stringify(data)
     });
     if (res.token) {
-      localStorage.setItem('recruitai_token', res.token);
+      localStorage.removeItem('recruitai_token');
+      sessionStorage.setItem('recruitai_token', res.token);
     }
     return res;
   },
@@ -99,7 +117,13 @@ export const api = {
       body: JSON.stringify(data)
     });
     if (res.token) {
-      localStorage.setItem('recruitai_token', res.token);
+      localStorage.removeItem('recruitai_token');
+      sessionStorage.removeItem('recruitai_token');
+      if (data.rememberMe) {
+        localStorage.setItem('recruitai_token', res.token);
+      } else {
+        sessionStorage.setItem('recruitai_token', res.token);
+      }
     }
     return res;
   },
@@ -113,6 +137,7 @@ export const api = {
       await fetchJson('/api/auth/logout', { method: 'POST' });
     } finally {
       localStorage.removeItem('recruitai_token');
+      sessionStorage.removeItem('recruitai_token');
     }
   },
 

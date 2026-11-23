@@ -3,14 +3,13 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
-import { ProtectedRoute } from './components/layout/ProtectedRoute';
+import { ProtectedRoute, PublicOnlyRoute } from './components/layout/ProtectedRoute';
 import { AppLayout } from './components/layout/AppLayout';
 import { LoginPage } from './pages/LoginPage';
 import { SignUpPage } from './pages/SignUpPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { JobsPage } from './pages/JobsPage';
 import { CandidatesPage } from './pages/CandidatesPage';
-import { MatchingPage } from './pages/MatchingPage';
 import { InterviewGeneratorPage } from './pages/InterviewGeneratorPage';
 import { HowToUsePage } from './pages/HowToUsePage';
 import { NotFoundPage } from './pages/NotFoundPage';
@@ -32,9 +31,9 @@ export default function App() {
           <BrowserRouter>
             <Routes>
               {/* Public Auth Routes */}
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/signup" element={<SignUpPage />} />
-              <Route path="/forgot-password" element={<LoginPage />} />
+              <Route path="/login" element={<PublicOnlyRoute><LoginPage /></PublicOnlyRoute>} />
+              <Route path="/signup" element={<PublicOnlyRoute><SignUpPage /></PublicOnlyRoute>} />
+              <Route path="/forgot-password" element={<PublicOnlyRoute><LoginPage /></PublicOnlyRoute>} />
 
               {/* Protected Workspace Layout */}
               <Route
@@ -48,7 +47,6 @@ export default function App() {
                 <Route index element={<DashboardPage />} />
                 <Route path="jobs" element={<JobsPage />} />
                 <Route path="candidates" element={<CandidatesPage />} />
-                <Route path="matching" element={<MatchingPage />} />
                 <Route path="interview-generator" element={<InterviewGeneratorPage />} />
                 <Route path="how-to-use" element={<HowToUsePage />} />
               </Route>

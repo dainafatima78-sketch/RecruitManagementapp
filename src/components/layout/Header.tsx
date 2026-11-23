@@ -37,11 +37,6 @@ export const Header: React.FC<HeaderProps> = ({
           title: 'Candidate Management',
           subtitle: 'Review candidate pipeline, resumes, and evaluation states'
         };
-      case '/matching':
-        return {
-          title: 'AI Candidate Matching',
-          subtitle: 'Analyze requirement alignment and identify skill gaps'
-        };
       case '/interview-generator':
         return {
           title: 'AI Interview Generator',

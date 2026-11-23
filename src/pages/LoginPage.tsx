@@ -45,7 +45,8 @@ export const LoginPage: React.FC = () => {
       addToast('success', 'Welcome Back', 'Successfully signed into your recruitment workspace.');
       navigate(from, { replace: true });
     } catch (err: any) {
-      setError(err.message || 'Invalid email or password.');
+      const errorMessage = typeof err === 'string' ? err : (err?.message || 'Invalid email or password.');
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -60,7 +61,8 @@ export const LoginPage: React.FC = () => {
       const res = await api.forgotPassword(forgotEmail.trim());
       setForgotMessage(res.message);
     } catch (err: any) {
-      setForgotMessage(err.message || 'Unable to process reset request.');
+      const errorMessage = typeof err === 'string' ? err : (err?.message || 'Unable to process reset request.');
+      setForgotMessage(errorMessage);
     } finally {
       setIsForgotLoading(false);
     }

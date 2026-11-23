@@ -59,6 +59,16 @@ class StorageManager {
       if (fs.existsSync(DB_FILE)) {
         const fileContent = fs.readFileSync(DB_FILE, 'utf-8');
         this.data = JSON.parse(fileContent);
+        const removedUserIds = new Set(
+          (this.data.users || [])
+            .filter(user => user.id === 'user-demo-1')
+            .map(user => user.id)
+        );
+        if (removedUserIds.size > 0) {
+          this.data.users = (this.data.users || []).filter(user => !removedUserIds.has(user.id));
+          this.data.sessions = (this.data.sessions || []).filter(session => !removedUserIds.has(session.userId));
+          this.save();
+        }
       } else {
         this.seedInitialData();
         this.save();
@@ -81,20 +91,8 @@ class StorageManager {
   }
 
   private seedInitialData() {
-    const demoUserId = 'user-demo-1';
-    const { salt, hash } = hashPassword('Password123!');
-
-    const demoUser: UserRecord = {
-      id: demoUserId,
-      name: 'Member',
-      email: 'recruiter@recruitai.com',
-      passwordHash: hash,
-      salt: salt,
-      role: 'Technical Recruiter',
-      createdAt: new Date('2026-10-01T08:00:00Z').toISOString()
-    };
-
-    this.data.users = [demoUser];
+    this.data.users = [];
+    this.data.sessions = [];
     this.data.jobs = [];
     this.data.candidates = [];
     this.data.activities = [];
@@ -109,10 +107,6 @@ class StorageManager {
 
   getUserById(id: string): UserRecord | undefined {
     return this.data.users.find(u => u.id === id);
-  }
-
-  getDefaultUser(): UserRecord | undefined {
-    return this.getUserByEmail('recruiter@recruitai.com') || this.data.users[0];
   }
 
   createUser(name: string, email: string, password: string): UserRecord {
