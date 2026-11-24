@@ -1,11 +1,18 @@
 import { Router } from 'express';
 import { storage, verifyPassword } from '../storage.js';
 import { AuthenticatedRequest, requireAuth } from '../auth.js';
+import {
+  createPostgresSession,
+  createPostgresUser,
+  deletePostgresSession,
+  getPostgresPool,
+  getPostgresUserByEmail
+} from '../postgres.js';
 
 const router = Router();
 
 // Register
-router.post('/register', (req, res) => {
+router.post('/register', async (req, res) => {
   try {
     const { name, email, password, confirmPassword, acceptTerms } = req.body;
 
@@ -29,13 +36,25 @@ router.post('/register', (req, res) => {
       return res.status(400).json({ error: 'You must accept the terms of service.' });
     }
 
-    const existingUser = storage.getUserByEmail(email);
+    const postgresPool = getPostgresPool();
+    if (!postgresPool && process.env.VERCEL) {
+      return res.status(503).json({ error: 'Authentication database is not configured. Set DATABASE_URL in Vercel Project Settings.' });
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+    const existingUser = postgresPool
+      ? await getPostgresUserByEmail(normalizedEmail)
+      : storage.getUserByEmail(normalizedEmail);
     if (existingUser) {
       return res.status(409).json({ error: 'An account with this email address already exists.' });
     }
 
-    const newUser = storage.createUser(name.trim(), email.trim(), password);
-    const session = storage.createSession(newUser.id);
+    const newUser = postgresPool
+      ? await createPostgresUser(name.trim(), normalizedEmail, password)
+      : storage.createUser(name.trim(), normalizedEmail, password);
+    const session = postgresPool
+      ? await createPostgresSession(newUser.id, 7 * 24 * 60 * 60 * 1000)
+      : storage.createSession(newUser.id);
 
     res.cookie('recruitai_session', session.token, {
       httpOnly: true,
@@ -55,14 +74,17 @@ router.post('/register', (req, res) => {
       },
       token: session.token
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Registration error:', error);
-    return res.status(500).json({ error: error.message || 'Server error during registration.' });
+    if (typeof error === 'object' && error !== null && 'code' in error && error.code === '23505') {
+      return res.status(409).json({ error: 'An account with this email address already exists.' });
+    }
+    return res.status(500).json({ error: error instanceof Error ? error.message : 'Server error during registration.' });
   }
 });
 
 // Login
-router.post('/login', (req, res) => {
+router.post('/login', async (req, res) => {
   try {
     const { email, password, rememberMe } = req.body;
 
@@ -70,7 +92,14 @@ router.post('/login', (req, res) => {
       return res.status(400).json({ error: 'Email and password are required.' });
     }
 
-    const user = storage.getUserByEmail(email);
+    const postgresPool = getPostgresPool();
+    if (!postgresPool && process.env.VERCEL) {
+      return res.status(503).json({ error: 'Authentication database is not configured. Set DATABASE_URL in Vercel Project Settings.' });
+    }
+
+    const user = postgresPool
+      ? await getPostgresUserByEmail(email.trim().toLowerCase())
+      : storage.getUserByEmail(email);
     if (!user) {
       return res.status(401).json({ error: 'Invalid email or password.' });
     }
@@ -80,8 +109,10 @@ router.post('/login', (req, res) => {
       return res.status(401).json({ error: 'Invalid email or password.' });
     }
 
-    const session = storage.createSession(user.id);
     const maxAge = rememberMe ? 30 * 24 * 60 * 60 * 1000 : 7 * 24 * 60 * 60 * 1000;
+    const session = postgresPool
+      ? await createPostgresSession(user.id, maxAge)
+      : storage.createSession(user.id, maxAge);
 
     res.cookie('recruitai_session', session.token, {
       httpOnly: true,
@@ -99,9 +130,9 @@ router.post('/login', (req, res) => {
       },
       token: session.token
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Login error:', error);
-    return res.status(500).json({ error: error.message || 'Server error during login.' });
+    return res.status(500).json({ error: error instanceof Error ? error.message : 'Server error during login.' });
   }
 });
 
@@ -121,13 +152,23 @@ router.get('/me', requireAuth, (req: AuthenticatedRequest, res) => {
 });
 
 // Logout
-router.post('/logout', (req: AuthenticatedRequest, res) => {
+router.post('/logout', async (req: AuthenticatedRequest, res) => {
   const token = req.cookies?.recruitai_session || req.sessionToken;
-  if (token) {
-    storage.deleteSession(token);
+  try {
+    if (token) {
+      if (getPostgresPool()) {
+        await deletePostgresSession(token);
+      } else {
+        storage.deleteSession(token);
+      }
+    }
+    res.clearCookie('recruitai_session');
+    return res.json({ success: true, message: 'Successfully signed out.' });
+  } catch (error) {
+    console.error('Logout error:', error);
+    res.clearCookie('recruitai_session');
+    return res.status(500).json({ error: error instanceof Error ? error.message : 'Server error during logout.' });
   }
-  res.clearCookie('recruitai_session');
-  return res.json({ success: true, message: 'Successfully signed out.' });
 });
 
 // Forgot Password

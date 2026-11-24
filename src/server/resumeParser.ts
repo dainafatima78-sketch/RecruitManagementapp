@@ -3,7 +3,6 @@ import mammoth from 'mammoth';
 import { EducationItem, WorkExperience } from './types.js';
 
 const require = createRequire(import.meta.url);
-const pdfParse = require('pdf-parse');
 
 export interface ParsedProfileFields {
   name: string;
@@ -37,6 +36,7 @@ export async function parseResumeBuffer(
   const lowerName = fileName.toLowerCase();
   if (lowerName.endsWith('.pdf') || mimeType.includes('pdf')) {
     try {
+      const pdfParse = require('pdf-parse');
       const pdfFn = typeof pdfParse === 'function' ? pdfParse : pdfParse.default || pdfParse;
       const data = await pdfFn(buffer);
       rawText = data.text || '';

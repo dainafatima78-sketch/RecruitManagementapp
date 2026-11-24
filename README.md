@@ -118,9 +118,10 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
    - **Framework Preset**: `Vite`
    - **Build Command**: `npm run build`
    - **Output Directory**: `dist`
-3. Add Environment Variable:
-   - `VITE_API_BASE_URL`: Your deployed Render backend URL (`https://recruitai-backend.onrender.com`).
-4. Click **Deploy**. Vercel will build the frontend and serve all SPA routes via `vercel.json`.
+3. Add Environment Variables in **Settings → Environment Variables**:
+   - `DATABASE_URL`: A PostgreSQL connection string reachable from Vercel. This is required for persistent signup, login, and session storage when using the Vercel API function. Add it to Production (and Preview if needed).
+   - `VITE_API_BASE_URL`: Only set this when the frontend should call a separate backend such as Render. Leave it unset to use the same-origin Vercel API.
+4. Click **Deploy**. Vercel will build the frontend and route API and SPA requests via `vercel.json`.
 
 ---
 

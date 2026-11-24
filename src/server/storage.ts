@@ -126,9 +126,9 @@ class StorageManager {
   }
 
   // Session methods
-  createSession(userId: string): SessionRecord {
+  createSession(userId: string, ttlMs: number = 7 * 24 * 60 * 60 * 1000): SessionRecord {
     const token = crypto.randomBytes(32).toString('hex');
-    const expiresAt = Date.now() + 7 * 24 * 60 * 60 * 1000;
+    const expiresAt = Date.now() + ttlMs;
     const session: SessionRecord = { token, userId, expiresAt };
     this.data.sessions.push(session);
     this.save();

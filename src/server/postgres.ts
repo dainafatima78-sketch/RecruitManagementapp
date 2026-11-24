@@ -1,12 +1,15 @@
 import { Pool } from 'pg';
+import crypto from 'crypto';
 import dotenv from 'dotenv';
+import type { SessionRecord, UserRecord } from './types.js';
+import { hashPassword } from './storage.js';
 dotenv.config();
 
 let pool: Pool | null = null;
 
 export function getPostgresPool(): Pool | null {
   const connectionString = process.env.DATABASE_URL || process.env.POSTGRES_URL;
-  if (!connectionString || connectionString.trim() === '' || connectionString.includes('YOUR_POSTGRES_URL')) {
+  if (!connectionString || connectionString.trim() === '' || connectionString.includes('YOUR_POSTGRES_')) {
     return null;
   }
 
@@ -27,6 +30,123 @@ export function getPostgresPool(): Pool | null {
   }
 
   return pool;
+}
+
+function requirePostgresPool(): Pool {
+  const postgresPool = getPostgresPool();
+  if (!postgresPool) {
+    throw new Error('PostgreSQL is not configured. Set DATABASE_URL in the deployment environment.');
+  }
+  return postgresPool;
+}
+
+export async function getPostgresUserByEmail(email: string): Promise<UserRecord | undefined> {
+  const result = await requirePostgresPool().query<{
+    id: string;
+    name: string;
+    email: string;
+    password_hash: string;
+    salt: string;
+    role: string;
+    created_at: Date | string;
+  }>(
+    'SELECT id, name, email, password_hash, salt, role, created_at FROM users WHERE lower(email) = lower($1)',
+    [email]
+  );
+  const row = result.rows[0];
+  if (!row) return undefined;
+  return {
+    id: row.id,
+    name: row.name,
+    email: row.email,
+    passwordHash: row.password_hash,
+    salt: row.salt,
+    role: row.role,
+    createdAt: new Date(row.created_at).toISOString()
+  };
+}
+
+export async function createPostgresUser(name: string, email: string, password: string): Promise<UserRecord> {
+  const id = `user-${crypto.randomUUID()}`;
+  const { salt, hash } = hashPassword(password);
+  const result = await requirePostgresPool().query<{
+    id: string;
+    name: string;
+    email: string;
+    password_hash: string;
+    salt: string;
+    role: string;
+    created_at: Date | string;
+  }>(
+    `INSERT INTO users (id, name, email, password_hash, salt, role)
+     VALUES ($1, $2, $3, $4, $5, 'Recruiter')
+     RETURNING id, name, email, password_hash, salt, role, created_at`,
+    [id, name, email.toLowerCase(), hash, salt]
+  );
+  const row = result.rows[0];
+  return {
+    id: row.id,
+    name: row.name,
+    email: row.email,
+    passwordHash: row.password_hash,
+    salt: row.salt,
+    role: row.role,
+    createdAt: new Date(row.created_at).toISOString()
+  };
+}
+
+export async function createPostgresSession(userId: string, ttlMs: number): Promise<SessionRecord> {
+  const token = crypto.randomBytes(32).toString('hex');
+  const expiresAt = Date.now() + ttlMs;
+  await requirePostgresPool().query(
+    'INSERT INTO sessions (token, user_id, expires_at) VALUES ($1, $2, $3)',
+    [token, userId, new Date(expiresAt)]
+  );
+  return { token, userId, expiresAt };
+}
+
+export async function getPostgresSession(token: string): Promise<{ session: SessionRecord; user: UserRecord } | undefined> {
+  const result = await requirePostgresPool().query<{
+    token: string;
+    session_user_id: string;
+    expires_at: Date | string;
+    id: string;
+    name: string;
+    email: string;
+    password_hash: string;
+    salt: string;
+    role: string;
+    created_at: Date | string;
+  }>(
+    `SELECT s.token, s.user_id AS session_user_id, s.expires_at,
+            u.id, u.name, u.email, u.password_hash, u.salt, u.role, u.created_at
+     FROM sessions s
+     JOIN users u ON u.id = s.user_id
+     WHERE s.token = $1 AND s.expires_at > NOW()`,
+    [token]
+  );
+  const row = result.rows[0];
+  if (!row) return undefined;
+  return {
+    session: {
+      token: row.token,
+      userId: row.session_user_id,
+      expiresAt: new Date(row.expires_at).getTime()
+    },
+    user: {
+      id: row.id,
+      name: row.name,
+      email: row.email,
+      passwordHash: row.password_hash,
+      salt: row.salt,
+      role: row.role,
+      createdAt: new Date(row.created_at).toISOString()
+    }
+  };
+}
+
+export async function deletePostgresSession(token: string): Promise<void> {
+  await requirePostgresPool().query('DELETE FROM sessions WHERE token = $1', [token]);
 }
 
 /**
