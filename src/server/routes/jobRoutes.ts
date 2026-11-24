@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import { storage } from '../storage';
-import { AuthenticatedRequest, requireAuth } from '../auth';
-import { EmploymentType, JobStatus } from '../types';
+import { storage } from '../storage.js';
+import { AuthenticatedRequest, requireAuth } from '../auth.js';
+import { EmploymentType, JobStatus } from '../types.js';
 
 const router = Router();
 

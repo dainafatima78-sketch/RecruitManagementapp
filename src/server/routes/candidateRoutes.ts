@@ -1,10 +1,10 @@
 import { Router } from 'express';
 import multer from 'multer';
-import { storage } from '../storage';
-import { AuthenticatedRequest, requireAuth } from '../auth';
-import { parseResumeBuffer } from '../resumeParser';
-import { CandidateStatus } from '../types';
-import { analyzeCandidateAgainstJob, enhanceResumeExtractionWithAI } from '../aiServices';
+import { storage } from '../storage.js';
+import { AuthenticatedRequest, requireAuth } from '../auth.js';
+import { parseResumeBuffer } from '../resumeParser.js';
+import { CandidateStatus } from '../types.js';
+import { analyzeCandidateAgainstJob, enhanceResumeExtractionWithAI } from '../aiServices.js';
 
 const router = Router();
 const upload = multer({

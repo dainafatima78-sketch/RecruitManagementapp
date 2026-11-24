@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import { storage } from './storage';
-import { UserRecord } from './types';
+import { storage } from './storage.js';
+import { UserRecord } from './types.js';
 
 export interface AuthenticatedRequest extends Request {
   user?: UserRecord;

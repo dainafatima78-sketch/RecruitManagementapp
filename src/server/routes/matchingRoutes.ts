@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import { storage } from '../storage';
-import { AuthenticatedRequest, requireAuth } from '../auth';
-import { analyzeCandidateAgainstJob } from '../aiServices';
+import { storage } from '../storage.js';
+import { AuthenticatedRequest, requireAuth } from '../auth.js';
+import { analyzeCandidateAgainstJob } from '../aiServices.js';
 
 const router = Router();
 router.use(requireAuth);

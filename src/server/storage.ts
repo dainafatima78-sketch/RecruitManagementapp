@@ -9,7 +9,7 @@ import {
   MatchAnalysisRecord,
   InterviewQuestionRecord,
   ActivityRecord
-} from './types';
+} from './types.js';
 
 interface DatabaseData {
   users: UserRecord[];

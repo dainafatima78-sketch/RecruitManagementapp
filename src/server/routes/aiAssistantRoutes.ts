@@ -1,8 +1,8 @@
 import { Router, Response } from 'express';
-import { AuthenticatedRequest, requireAuth } from '../auth';
-import { storage } from '../storage';
-import { askRecruitmentAssistant } from '../aiServices';
-import { agentRouter } from '../agentRouterClient';
+import { AuthenticatedRequest, requireAuth } from '../auth.js';
+import { storage } from '../storage.js';
+import { askRecruitmentAssistant } from '../aiServices.js';
+import { agentRouter } from '../agentRouterClient.js';
 
 const router = Router();
 router.use(requireAuth);

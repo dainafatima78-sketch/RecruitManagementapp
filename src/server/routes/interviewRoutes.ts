@@ -1,8 +1,8 @@
 import { Router } from 'express';
-import { storage } from '../storage';
-import { AuthenticatedRequest, requireAuth } from '../auth';
-import { generateQuestionsService } from '../aiServices';
-import { QuestionCategory, QuestionDifficulty } from '../types';
+import { storage } from '../storage.js';
+import { AuthenticatedRequest, requireAuth } from '../auth.js';
+import { generateQuestionsService } from '../aiServices.js';
+import { QuestionCategory, QuestionDifficulty } from '../types.js';
 
 const router = Router();
 router.use(requireAuth);

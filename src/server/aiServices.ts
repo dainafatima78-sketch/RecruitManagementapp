@@ -1,5 +1,5 @@
 import { GoogleGenAI } from '@google/genai';
-import { AgentRouterClient } from './agentRouterClient';
+import { AgentRouterClient } from './agentRouterClient.js';
 import {
   CandidateRecord,
   JobRecord,
@@ -7,7 +7,7 @@ import {
   InterviewQuestionRecord,
   QuestionCategory,
   QuestionDifficulty
-} from './types';
+} from './types.js';
 import crypto from 'crypto';
 
 // Initialize AgentRouter (ChatGPT 6 Astra)

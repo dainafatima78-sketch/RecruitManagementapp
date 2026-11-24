@@ -7,7 +7,7 @@ import {
   VibeType,
   PatternOption,
   CasingOption
-} from '../../services/teamGenerator';
+} from '../../services/teamGenerator.js';
 
 const router = Router();
 

@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { storage } from '../storage';
-import { AuthenticatedRequest, requireAuth } from '../auth';
+import { storage } from '../storage.js';
+import { AuthenticatedRequest, requireAuth } from '../auth.js';
 
 const router = Router();
 

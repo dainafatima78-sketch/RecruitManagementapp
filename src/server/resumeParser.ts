@@ -1,6 +1,6 @@
 import { createRequire } from 'module';
 import mammoth from 'mammoth';
-import { EducationItem, WorkExperience } from './types';
+import { EducationItem, WorkExperience } from './types.js';
 
 const require = createRequire(import.meta.url);
 const pdfParse = require('pdf-parse');

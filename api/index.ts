@@ -1,15 +1,15 @@
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
-import authRoutes from '../src/server/routes/authRoutes';
-import jobRoutes from '../src/server/routes/jobRoutes';
-import candidateRoutes from '../src/server/routes/candidateRoutes';
-import matchingRoutes from '../src/server/routes/matchingRoutes';
-import interviewRoutes from '../src/server/routes/interviewRoutes';
-import dashboardRoutes from '../src/server/routes/dashboardRoutes';
-import aiAssistantRoutes from '../src/server/routes/aiAssistantRoutes';
-import teamRoutes from '../src/server/routes/teamRoutes';
-import { initializePostgresDatabase } from '../src/server/postgres';
+import authRoutes from '../src/server/routes/authRoutes.js';
+import jobRoutes from '../src/server/routes/jobRoutes.js';
+import candidateRoutes from '../src/server/routes/candidateRoutes.js';
+import matchingRoutes from '../src/server/routes/matchingRoutes.js';
+import interviewRoutes from '../src/server/routes/interviewRoutes.js';
+import dashboardRoutes from '../src/server/routes/dashboardRoutes.js';
+import aiAssistantRoutes from '../src/server/routes/aiAssistantRoutes.js';
+import teamRoutes from '../src/server/routes/teamRoutes.js';
+import { initializePostgresDatabase } from '../src/server/postgres.js';
 
 const app = express();
 
