@@ -98,30 +98,46 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
-## 🌐 Production Deployment Guide
+## 🌐 Production Deployment with an Existing Local PostgreSQL
 
-### A. Backend & PostgreSQL Deployment on Render
+Vercel runs the API function in Vercel's infrastructure. It cannot reach
+`localhost` on your Windows PC, and your PC's `.env` file is not uploaded to
+Vercel. Setting `DATABASE_URL` in Vercel to a local address will therefore not
+connect it to your PostgreSQL server. The Vercel API function requires a
+database reachable from Vercel.
 
-1. Go to [Render Dashboard](https://dashboard.render.com/) and click **New +** → **Blueprint** (or connect this repository).
-2. Render reads `render.yaml` and provisions:
-   - **PostgreSQL Database**: Free tier managed PostgreSQL database.
-   - **Web Service**: Node.js backend executing `npm install && npm run build` and `npm start`.
-3. Add your private environment variables in the Render Dashboard:
-   - `AGENTROUTER_API_KEY`: Your AgentRouter secret key.
-   - `FRONTEND_URL`: Your Vercel frontend URL (e.g., `https://recruit-managementapp.vercel.app`).
-4. Note your live backend URL (e.g., `https://recruitai-backend.onrender.com`).
+To keep PostgreSQL on your PC, run the Express backend on that same PC and use
+Vercel only for the frontend:
 
-### B. Frontend Deployment on Vercel
+1. In the backend `.env` on the PC, set `DATABASE_URL` to your existing database,
+   for example:
+   ```env
+   DATABASE_URL="postgresql://kisaschool:URL_ENCODED_PASSWORD@127.0.0.1:5432/recruitai_db"
+   NODE_ENV=production
+   PORT=3000
+   ```
+   Replace the password placeholder with your PostgreSQL password, URL-encoding
+   reserved characters in it. Keep this value in the backend environment only;
+   never use a `VITE_` variable for database credentials.
+2. Build and start the backend on the PC with `npm run build` and then
+   `npm start`. The backend connects to PostgreSQL over loopback. Its startup
+   schema setup uses `CREATE TABLE IF NOT EXISTS`; it does not drop tables or
+   delete existing records. Make sure the PostgreSQL role has the required
+   database/schema permissions.
+3. Give the backend a stable HTTPS address that Vercel visitors can reach, using
+   a secure HTTPS tunnel or another protected ingress to the backend port. Do
+   not expose PostgreSQL port 5432 to the internet. The PC, PostgreSQL service,
+   and backend must remain online for the production app to work.
+4. In Vercel Project Settings → Environment Variables, set
+   `VITE_API_BASE_URL` to that HTTPS backend address (no trailing slash), for
+   example `https://api.example.com`. Do not set `DATABASE_URL` in Vercel for
+   this arrangement. Redeploy after changing `VITE_API_BASE_URL`; Vite embeds
+   this setting into the frontend build.
 
-1. Go to [Vercel Dashboard](https://vercel.com/new) and import the GitHub repository: `RecruitManagementapp`.
-2. Configure Project Settings:
-   - **Framework Preset**: `Vite`
-   - **Build Command**: `npm run build`
-   - **Output Directory**: `dist`
-3. Add Environment Variables in **Settings → Environment Variables**:
-   - `DATABASE_URL`: A PostgreSQL connection string reachable from Vercel. This is required for persistent signup, login, and session storage when using the Vercel API function. Add it to Production (and Preview if needed).
-   - `VITE_API_BASE_URL`: Only set this when the frontend should call a separate backend such as Render. Leave it unset to use the same-origin Vercel API.
-4. Click **Deploy**. Vercel will build the frontend and route API and SPA requests via `vercel.json`.
+When `VITE_API_BASE_URL` is unset, the frontend uses same-origin `/api` requests
+and Vercel routes those requests to its serverless API function. In that
+configuration, `DATABASE_URL` must refer to a database reachable from Vercel;
+the PostgreSQL server on your PC is not reachable at `localhost` from there.
 
 ---
 

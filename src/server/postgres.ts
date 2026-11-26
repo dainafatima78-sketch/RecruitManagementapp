@@ -16,7 +16,7 @@ export function getPostgresPool(): Pool | null {
   if (!pool) {
     pool = new Pool({
       connectionString,
-      ssl: process.env.NODE_ENV === 'production' || connectionString.includes('sslmode=require') || connectionString.includes('render.com') || connectionString.includes('neon.tech') || connectionString.includes('supabase')
+      ssl: connectionString.includes('sslmode=require') || connectionString.includes('render.com') || connectionString.includes('neon.tech') || connectionString.includes('supabase')
         ? { rejectUnauthorized: false }
         : undefined,
       max: 10,
