@@ -6,7 +6,9 @@ import {
   createPostgresUser,
   deletePostgresSession,
   getPostgresPool,
-  getPostgresUserByEmail
+  getPostgresUserByEmail,
+  isPostgresRequired,
+  AUTH_DATABASE_CONFIGURATION_ERROR
 } from '../postgres.js';
 
 const router = Router();
@@ -37,8 +39,8 @@ router.post('/register', async (req, res) => {
     }
 
     const postgresPool = getPostgresPool();
-    if (!postgresPool && process.env.VERCEL) {
-      return res.status(503).json({ error: 'Authentication database is not configured. Set DATABASE_URL in Vercel Project Settings.' });
+    if (!postgresPool && isPostgresRequired()) {
+      return res.status(503).json({ error: AUTH_DATABASE_CONFIGURATION_ERROR });
     }
 
     const normalizedEmail = email.trim().toLowerCase();
@@ -93,8 +95,8 @@ router.post('/login', async (req, res) => {
     }
 
     const postgresPool = getPostgresPool();
-    if (!postgresPool && process.env.VERCEL) {
-      return res.status(503).json({ error: 'Authentication database is not configured. Set DATABASE_URL in Vercel Project Settings.' });
+    if (!postgresPool && isPostgresRequired()) {
+      return res.status(503).json({ error: AUTH_DATABASE_CONFIGURATION_ERROR });
     }
 
     const user = postgresPool
@@ -155,8 +157,13 @@ router.get('/me', requireAuth, (req: AuthenticatedRequest, res) => {
 router.post('/logout', async (req: AuthenticatedRequest, res) => {
   const token = req.cookies?.recruitai_session || req.sessionToken;
   try {
+    const postgresPool = getPostgresPool();
+    if (!postgresPool && isPostgresRequired()) {
+      return res.status(503).json({ error: AUTH_DATABASE_CONFIGURATION_ERROR });
+    }
+
     if (token) {
-      if (getPostgresPool()) {
+      if (postgresPool) {
         await deletePostgresSession(token);
       } else {
         storage.deleteSession(token);

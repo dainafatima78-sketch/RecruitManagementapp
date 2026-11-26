@@ -7,6 +7,13 @@ dotenv.config();
 
 let pool: Pool | null = null;
 
+export const AUTH_DATABASE_CONFIGURATION_ERROR =
+  'Authentication database is not configured. Configure DATABASE_URL or POSTGRES_URL in the backend environment.';
+
+export function isPostgresRequired(): boolean {
+  return Boolean(process.env.VERCEL) || process.env.NODE_ENV === 'production';
+}
+
 export function getPostgresPool(): Pool | null {
   const connectionString = process.env.DATABASE_URL || process.env.POSTGRES_URL;
   if (!connectionString || connectionString.trim() === '' || connectionString.includes('YOUR_POSTGRES_')) {
@@ -35,7 +42,7 @@ export function getPostgresPool(): Pool | null {
 function requirePostgresPool(): Pool {
   const postgresPool = getPostgresPool();
   if (!postgresPool) {
-    throw new Error('PostgreSQL is not configured. Set DATABASE_URL in the deployment environment.');
+    throw new Error(AUTH_DATABASE_CONFIGURATION_ERROR);
   }
   return postgresPool;
 }

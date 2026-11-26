@@ -1,7 +1,12 @@
 import { Request, Response, NextFunction } from 'express';
 import { storage } from './storage.js';
 import { UserRecord } from './types.js';
-import { getPostgresPool, getPostgresSession } from './postgres.js';
+import {
+  AUTH_DATABASE_CONFIGURATION_ERROR,
+  getPostgresPool,
+  getPostgresSession,
+  isPostgresRequired
+} from './postgres.js';
 
 export interface AuthenticatedRequest extends Request {
   user?: UserRecord;
@@ -21,8 +26,8 @@ export async function requireAuth(req: AuthenticatedRequest, res: Response, next
 
   try {
     const postgresPool = getPostgresPool();
-    if (!postgresPool && process.env.VERCEL) {
-      return res.status(503).json({ error: 'Authentication database is not configured. Set DATABASE_URL in Vercel Project Settings.' });
+    if (!postgresPool && isPostgresRequired()) {
+      return res.status(503).json({ error: AUTH_DATABASE_CONFIGURATION_ERROR });
     }
 
     if (postgresPool) {

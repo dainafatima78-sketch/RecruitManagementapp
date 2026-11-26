@@ -112,7 +112,7 @@ Vercel only for the frontend:
 1. In the backend `.env` on the PC, set `DATABASE_URL` to your existing database,
    for example:
    ```env
-   DATABASE_URL="postgresql://kisaschool:URL_ENCODED_PASSWORD@127.0.0.1:5432/recruitai_db"
+   DATABASE_URL="postgresql://postgres:YOUR_POSTGRES_PASSWORD_URL_ENCODED@127.0.0.1:5432/recruitai_db"
    NODE_ENV=production
    PORT=3000
    ```
